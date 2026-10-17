@@ -153,6 +153,8 @@ export function buildFallbackKey(
  * @param flags       Operational flags — pass when building a *lock* key so
  *                    that requests with different behaviours are not coalesced
  *                    under the same lock; omit for inner cache keys.
+ * @param flags.includeClientIp Whether to scope the key to the requesting
+ *                    client. Defaults to true.
  */
 export function buildResolveKey(
   prefix: string,
@@ -161,7 +163,11 @@ export function buildResolveKey(
   filename: string,
   credential: string,
   clientIp?: string,
-  flags?: { cacheAndPlay?: boolean; autoRemoveDownloads?: boolean }
+  flags?: {
+    cacheAndPlay?: boolean;
+    autoRemoveDownloads?: boolean;
+    includeClientIp?: boolean;
+  }
 ): string {
   const { type, hash, fileIndex } = playbackInfo;
   const nzb = playbackInfo.type === 'usenet' ? playbackInfo.nzb : undefined;
@@ -172,7 +178,7 @@ export function buildResolveKey(
     serviceName,
     type,
     getSimpleTextHash(credential),
-    clientIp ?? '-',
+    flags?.includeClientIp === false ? '-' : (clientIp ?? '-'),
     hash,
     nzb ? hashNzbUrl(nzb, false) : '-',
     fileIndex ?? '-',

@@ -967,7 +967,7 @@ export abstract class UsenetStreamService implements UsenetDebridService {
         filename,
         this.config.token,
         this.config.clientIp,
-        { cacheAndPlay }
+        { cacheAndPlay, includeClientIp: false }
       ),
       () => this._resolve(playbackInfo, filename),
       {
