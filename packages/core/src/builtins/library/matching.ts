@@ -25,6 +25,18 @@ const TITLE_MATCH_THRESHOLD = 0.85;
 const MATCH_SLICE_MS = 8;
 
 /**
+ * Returns the names that can identify a file in a library item.
+ *
+ * A collection's top-level name may not match any of the movies it contains,
+ * so prefer contained filenames when the service provides them.
+ */
+function getItemMatchNames(item: DebridDownload): string[] {
+  const fileNames =
+    item.files?.flatMap((file) => (file.name ? [file.name] : [])) ?? [];
+  return fileNames.length > 0 ? fileNames : item.name ? [item.name] : [];
+}
+
+/**
  * Matches title-based criteria against a download item name.
  */
 export function isItemMatch(
@@ -115,7 +127,12 @@ export async function matchTorrents(
     if (!item.name || !item.hash) continue;
     if (item.status !== 'cached' && item.status !== 'downloaded') continue;
 
-    if (!isItemMatch(item.name, metadata, parsedId, cleanedTitles)) continue;
+    if (
+      !getItemMatchNames(item).some((itemName) =>
+        isItemMatch(itemName, metadata, parsedId, cleanedTitles)
+      )
+    )
+      continue;
 
     results.push({
       type: 'torrent',
